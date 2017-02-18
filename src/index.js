@@ -1,19 +1,17 @@
+import _ from 'lodash';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import YTSearch from 'youtube-api-search';
 import SearchBar from './components/search_bar';
 import VideoList from './components/video_list';
+import VideoDetail from './components/video_detail';
 
 // create youtube api key
 // https://console.developers.google.com
 // npm install --save youtube-api-search
 
 
-// downward data follow
-
-//const API_KEY = 'AIzaSyBe5nWRGvmSRnRkW0xNOFcD-Mk_W3SjimY'; // marchock - you need to enable
-const API_KEY = 'AIzaSyBQjNRYkQTJJKNiNoD5vN_SvHB6IHMEeTA'; // bynd
-
+const API_KEY = 'AIzaSyBe5nWRGvmSRnRkW0xNOFcD-Mk_W3SjimY';
 
 class App extends Component {
 
@@ -21,19 +19,34 @@ class App extends Component {
     super(props);
 
     this.state = {
-      videos: []
+      videos: [],
+      selectedVideo: null
     };
 
-    YTSearch({ key: API_KEY, term: 'surfboards'}, (videos) => {
-      this.setState({ videos });
+    this.videoSearch('reactjs');
+  }
+
+  videoSearch(term) {
+    YTSearch({ key: API_KEY, term }, (videos) => {
+      this.setState({
+        videos: videos,
+        selectedVideo: videos[0]
+      });
     });
   }
 
   render() {
+    const videoSearch = _.debounce((term) => { this.videoSearch(term) }, 500);
+
     return (
       <div>
-        <SearchBar />
-        <VideoList videos={this.state.videos} />
+        <h2>React Example: Youtube API</h2>
+
+        <SearchBar onSearchTermChange={videoSearch} />
+        <VideoDetail video={this.state.selectedVideo} />
+        <VideoList
+          onVideoSelect={ selectedVideo => this.setState({selectedVideo}) }
+          videos={this.state.videos} />
       </div>
     );
   }
